@@ -16,6 +16,17 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: qdrant
+  # The local overlay omits storageClassName so OrbStack's default provisioner
+  # fills it in. The chart then renders `storageClassName: null`, which ArgoCD's
+  # differ treats as distinct from the field being absent on the live resource —
+  # leaving the StatefulSet permanently OutOfSync. Ignore just that field.
+  # (Prod sets storageClassName explicitly, so it doesn't hit this.)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: qdrant
+      jqPathExpressions:
+        - .spec.volumeClaimTemplates[].spec.storageClassName
   syncPolicy:
     automated:
       prune: true
