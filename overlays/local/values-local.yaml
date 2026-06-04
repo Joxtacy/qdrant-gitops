@@ -1,0 +1,23 @@
+# Full values for the local (OrbStack) environment — base defaults + local overrides
+# merged into one file so kustomize's load-restrictor stays happy.
+replicaCount: 1
+
+image:
+  tag: v1.18.2
+
+persistence:
+  size: 5Gi
+  # no storageClassName — OrbStack default StorageClass provisions the PVC
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: "250m"
+  limits:
+    memory: 2Gi
+
+config:
+  cluster:
+    enabled: false
+  service:
+    enable_tls: false

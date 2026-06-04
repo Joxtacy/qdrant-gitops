@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: qdrant
+
+# Base only provides the namespace. Chart inflation lives in each overlay
+# so per-env values can be layered via additionalValuesFiles.
+resources:
+  - namespace.yaml

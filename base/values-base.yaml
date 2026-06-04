@@ -1,0 +1,21 @@
+# Shared defaults. Overlays patch replicaCount / resources / persistence.
+replicaCount: 1
+
+image:
+  tag: v1.18.2
+
+persistence:
+  size: 10Gi
+
+resources:
+  requests:
+    memory: 1Gi
+    cpu: "500m"
+  limits:
+    memory: 4Gi
+
+config:
+  cluster:
+    enabled: false
+  service:
+    enable_tls: false

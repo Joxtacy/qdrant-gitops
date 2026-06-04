@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: qdrant-local
+  namespace: argocd
+  # Lets ArgoCD clean up the Helm-rendered resources on delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # Point at your Git repo once this is committed.
+    repoURL: https://github.com/Joxtacy/qdrant-gitops.git
+    targetRevision: main
+    path: overlays/local
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: qdrant
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

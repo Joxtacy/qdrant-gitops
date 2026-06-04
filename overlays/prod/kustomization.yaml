@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: qdrant
+
+resources:
+  - ../../base
+
+helmCharts:
+  - name: qdrant
+    repo: https://qdrant.to/helm
+    version: 1.18.2
+    releaseName: qdrant
+    namespace: qdrant
+    valuesFile: values-prod.yaml
+
+# kustomize >= 5.8.0 no longer stamps top-level `namespace:` onto Helm-inflated
+# resources lacking an explicit namespace; force it onto the namespaced kinds.
+patches:
+  - target:
+      kind: (StatefulSet|Service|ConfigMap|ServiceAccount|Pod|Secret)
+    patch: |-
+      - op: add
+        path: /metadata/namespace
+        value: qdrant

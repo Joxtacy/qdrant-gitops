@@ -1,0 +1,35 @@
+# Full values for production — base defaults + prod overrides in one file.
+replicaCount: 3
+
+image:
+  tag: v1.18.2
+
+persistence:
+  size: 50Gi
+  storageClassName: gp3  # adjust to your cluster's SSD-backed class
+
+resources:
+  requests:
+    memory: 4Gi
+    cpu: "2"
+  limits:
+    memory: 8Gi
+
+config:
+  cluster:
+    enabled: true
+  service:
+    enable_tls: false
+
+# API key from a pre-existing secret (External Secrets / 1Password).
+# NOTE (chart 1.18.x): the chart resolves this via a Helm `lookup` of the named
+# Secret at render time and bakes the value into a chart-managed Secret. `lookup`
+# returns nothing during offline rendering (kustomize build / ArgoCD manifest
+# generation), so under pure GitOps the key will NOT populate this way. For
+# ArgoCD, prefer injecting the Secret directly (External Secrets writing the
+# chart's expected `<release>-apikey` Secret) rather than relying on valueFrom.
+apiKey:
+  valueFrom:
+    secretKeyRef:
+      name: qdrant-api-key
+      key: api-key

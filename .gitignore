@@ -1,0 +1,15 @@
+# Kustomize Helm chart inflation cache. Charts are pulled by `version:` from
+# the declared `repo:` at build time, so the local cache is not committed.
+charts/
+**/charts/
+
+# Rendered/built manifests
+*.rendered.yaml
+build/
+dist/
+
+# Editor / OS cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/
