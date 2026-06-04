@@ -84,6 +84,25 @@ kubectl -n argocd port-forward svc/argocd-server 8080:443
   "helm chart inflation requires --enable-helm" error.
 - The `ServerSideApply=true` syncOption avoids last-applied-config annotation
   bloat on the larger rendered manifests.
+- **The `StatefulSet` needs `ServerSideDiff=true`** (set as the
+  `argocd.argoproj.io/compare-options` annotation on the Application). The
+  Helm-rendered manifest omits every field Kubernetes defaults onto the live
+  object — `revisionHistoryLimit`, `dnsPolicy`, `volumeMode`, `storageClassName`
+  (null on the local overlay), `persistentVolumeClaimRetentionPolicy`, and the
+  pod-template defaults. ArgoCD's client-side diff does not cancel these, so the
+  StatefulSet sits permanently `OutOfSync` (Healthy, but never green) and
+  `selfHeal` re-syncs it on every cycle. `ServerSideDiff` runs the desired
+  manifest through an API-server dry-run so the same defaults apply to both
+  sides and cancel. Symptom if you ever drop the annotation: `kubectl diff`
+  shows no drift but the ArgoCD UI does.
+- **The Application manifest is not self-managed.** `argocd/application-local.yaml`
+  lives in this repo for reference, but ArgoCD does not reconcile its own
+  `Application` object — you apply it with `kubectl apply -f`. So edits to that
+  file (the annotations above, `syncPolicy`, `repoURL`, …) only take effect
+  after a manual `kubectl apply -f argocd/application-local.yaml`. ArgoCD
+  auto-reconciles only what lives under the Application's `path` (`overlays/local`).
+  To make the Application itself GitOps-managed, adopt an app-of-apps pattern or
+  an `ApplicationSet`.
 
 ## Cleanup
 
