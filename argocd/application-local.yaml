@@ -3,6 +3,12 @@ kind: Application
 metadata:
   name: qdrant-local
   namespace: argocd
+  annotations:
+    # Diff via an API-server dry-run so server-defaulted fields (revisionHistory-
+    # Limit, dnsPolicy, volumeMode, storageClassName, etc.) are applied to the
+    # desired manifest too and cancel against live. Without this the Helm-rendered
+    # StatefulSet sits permanently OutOfSync against its own defaulted live state.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
   # Lets ArgoCD clean up the Helm-rendered resources on delete.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -16,17 +22,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: qdrant
-  # The local overlay omits storageClassName so OrbStack's default provisioner
-  # fills it in. The chart then renders `storageClassName: null`, which ArgoCD's
-  # differ treats as distinct from the field being absent on the live resource —
-  # leaving the StatefulSet permanently OutOfSync. Ignore just that field.
-  # (Prod sets storageClassName explicitly, so it doesn't hit this.)
-  ignoreDifferences:
-    - group: apps
-      kind: StatefulSet
-      name: qdrant
-      jqPathExpressions:
-        - .spec.volumeClaimTemplates[].spec.storageClassName
   syncPolicy:
     automated:
       prune: true
